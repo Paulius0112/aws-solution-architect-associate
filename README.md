@@ -508,6 +508,8 @@ __EBS__
 4. Cold Hard Disk Drive
 5. Magnetic
 
+![My animated logo](assets/ebs.png)
+
 __AMI__
 Can be selected on
 - Region
@@ -543,7 +545,136 @@ __ENI, ENA, EFA__
     1. Choose for when you need to accelerate High Performance Comouting (HPC) and ML applications or if you need to do an OS by-pass. 
 
 __SPOT instances and fleets__
-- use unsed EC2 capacity in the AWS cloud. Are available at up to 90% discount comparaed to On-Demand. Can use for stateless, fault-tolerant or flexiable applications, such as big data, containeriz workloads, CI/CS, web servers, HPC and other test workloads
+- use unsed EC2 capacity in the AWS cloud. Are available at up to 90% discount comparaed to On-Demand. Can use for stateless, fault-tolerant or flexiable applications, such as big data, containeriz workloads, CI/CS, web servers, HPC and other test workloads. They are not good for persistent workloads, critical jobs and databases
+- To use the Spot Instances, you must first decide on your maximum Spot price. The instance will be provisioned so long as the Spot price is below your maximum Spot price. Hourly spot price varies depending on capacity and region
+- If spot price goes above your maximum, you hahve two minutes to choose wheter to stop or terminate your instance
+- You can use *Spot block* to stop your Spot Instances from being terminated even if the Spot price goes over your maximum Spot price. You can set Spot blocks for between one to six hours currently. 
+- *Procces of creating a spot instance*
+    1. Create a request (Maximum price, Desired amount of instances, Launch specifications, Request type (one time or persistent), Timeline (Valid from and valid until))
+    2. Launch the instance. If the price increases, one time instances will be removed, while persistent will be removed and launched again once th eprice meets the criteria 
+
+*Spot fleets*
+- Is a collection of Spot Instances and optionally, On-Demand instnaces.
+- The spot fleet attempts to maintain its target capacity fleet if your spot instances are interupted.
+- Tasks done:
+    1. Set up different launch pools. Define things like EC@ instance type, OS and AZ
+    2. You can have multiple pools, and he fleet will choose the best way to implement depending on the strategy youd define. Strategies:
+        - *capacityOptimized* - The spot isntanes come from the pool with optimal capacity for the number of instances launching
+        - *diversified* - The spot instaces are distributed across all pools
+        - *lowerPrice* - the spot instances come from the pool with the lowest price. This is the default strategy
+        - *InstancePoolsToUseCount* - the spot instaces are distributed across the number of spot instance pool ypu specify. This parameter is valid only when used in combination with lowestPrice
+    3. Spot fleets will stop launching instances once you reach your price threshold or capacity desire
+
+*EC2 Hipernate*
+- When you hibernate an EC2 instance, the OS is told to perform hibernation. It saves the contents from the instance memory RAM to your EBS root volume.
+- OS does not need to reboot, since the RAM contents are reloaded, rovides much faster boot up
+- It requires to have root volume encryption
+- Instance RAM must be less than 150 GB
+- Can't be hibernated for more than 60 days
+
+*Cloudtrail*
+- increases visibility into your user and resource activity by recording AWS Management COnsole actions and API calls
+
+*Cloudwatch*
+- Can monitor most of AWS as well as your applications that run on AWS
+- CloudWatch with EC2 will monitor events every 5 minutes by default
+- You can have 1 miunte intervals by turning on detailed monitoring
+
+*IAM Roles*
+- Roles are more secure than storing your access and secret keys on individual EC2 instances.
+- Roles are easier to manage
+- Roles can be assigned to EC2 instances after it is created using both console and command line
+- Roles are universal - can be used in any region
+
+*EFS*
+- Elastic file system - file storage for EC2
+- Provides simple interface that allows you to create and configure file systems quickly and easily
+- Storage capacity is elastic, growing nad shrinking automatically as you add and remove files
+- Instances can share single EFS, but not EBS
+- Integrates life cycle policies
+- Requires NFS protocol allowed in the security group to communicate with EC2
+- You pay only for what you use
+- Can support thousands of concurrent NFS connections and can scale up to the petabytes
+- Data is stored across multiple AZ's within a region
+- Read After Write consistency
+- EC2 running windows cannot connect to EFS, only linux and unix based. If it is windows server, it should use FSx Windows
+
+*FSx (File Server)* 
+- **For windows**: provides a fully managed native Microsoft Windows file system so you can easily move your Windows-based applications that require file storage to AWS. It is built on Windows server
+    1. It is a managed Windows Server that runs Windows Server Message Block (SMB)-baed file services
+    2. Designed for windows
+- **FSx for Lustre** - fully managed file system that is optimized for compute-intensive workloads, such as high-performance computing, ML, media data processing workflows and electronic design automatino (EDA
+    1. You can launch and run a Lustre file system that can process massive data sets at up to hundreds of gigabytes per second of throughput, millions of IOPS and sub-milisecond latencies
+
+**When to use EFS, FSx for windows or FSx for Lustre**
+- EFS - when you need distributed, highly resilient storage for Linux instances and linux-based applications
+- FSx for windows - when you need centralised storage for windows based applications
+- FSx for Lustre - when you need high-speed, high-capacity distributed storage. It can store data directly on S3
+
+__EC2 placement groups__
+- The name for placement group must be unique within your AWS account
+- You cant merge placement groups
+- You can move existing instance into a placement group. Before you can move the instance, the instsance must be stopped. It can only be achieved using AWS CLI or SDK, not yet with a console
+1. Clustered Placement group
+    - Grouping instances within a single AZ (put them very close together)
+    - Recommented for applications that need low network latency, high network throughput, or both
+    - Only certain instances can be launched in this group
+    - Cant span multiple AZ, all other groups can
+    - AWS recommneds homogenous instances within clustered pplacement group
+2. Spread Placement group
+    - Each instance is placed on distinct underlying hardware
+    - Recommended for applications that have a small number of critical instances that should be kept separate from each other
+    - For example if one applications fails, it should not effect the others
+    - Can have in different AZ within a region
+    - Think like separate instances
+3. Partitioned
+    - AWS divides each group into logical segments called partitions.
+    - Each partition within a placement group has its own set of racks. Each eack has its own network and power source.
+    - No two partitions within a placement group share the same racks, allowing you to isolate the impact of hardware failure within your application
+    - Think like multiple instances
+
+__High performance computing (HPC)__
+- Create a large number of resources in almost no time. You only pay for the resources you use - and, once finished, you can destroy them
+- Can be achieved by these services
+1. Data transfer (get data into AWS)
+    - *Snowball, SNowmobile* (terabytes/petabytes worth of data)
+    - *AWS DataSync* to store on S3, EFS, FSx for Windows
+    - *Direct Connect* (cloud service that established a dedicated network connection from your premises to AWS.)
+2. Compute and networking
+    - CPU or GPU optimized
+    - EC2 fleets (Spot instances or fleets)
+    - Placement groups (cluster placement groups)
+    - Enhanced networking
+        1. Uses single root I/O  (SR-IOV)virtualization to provide high-performance networking on supported instance tpypes. Provides higher I/O performance and lower CPU utilization.
+        2. Use where you want good network connection
+        3. Provies higher bandwidth, higher packet per second performance, consistently lower inter-instance latencies. There is additional charge for this service
+        4. Can be enabled using:
+            - *Elastic Network Adapter* - supports network speed of up to 100Gbps (Chose during exam)
+            - *Virtual Function* interface, supports network speed up to 10 Gbps used for legacy systems
+    - Elastic Network Adapters
+    - Elastic Fabric Adapters
+        1. Is a network device you can attach to your EC2 to accelerate HPC and ML applications
+        2. Provides lower, more consistent latency and higher throughput than the TCP protocol.
+        3. Can us OS-bypass, allows HPC and ML applications to bypass OS kernel and communicate directly with the EFA device. Only linux
+3. Storage
+    1. Instance-attached storage
+        - EBS
+        - Instance Store - scale to millions of IOPS, low latency
+    2. Network storage
+        - S3
+        - EFS
+        - FSx
+4. Orchestration and automation
+    - AWS Batch - batch computing jobs
+    - ParallelCluster
+
+__WAF__
+- Monitors HTTP and HTTPS requests that are forwarded to CloudFront, ALB or API gateway
+- Lets you control access to your content
+- Allows three different behaviours:
+    1. Allow all requests except the ones you specify
+    2. Block all requests except the ones you specify
+    3. Count the requests that match the properties you specify
 
 # RDS, Redshift and ElastiCache
 

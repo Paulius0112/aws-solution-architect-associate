@@ -207,7 +207,7 @@ __Weighted routing policy__ is a good fit for __blue-green deployments__.
         - Applications that require reserved capacity
         - Users able to make upfront payments to reduce their total computing costs even further 
         - **Reserve Pricing Types**
-            - Standard Reserver instances - offer up to 75% off demand instances. The more you pay up front and the longer the contract, the greater the discount
+            - Standard Reserver instances - offer up to 75% off demand instances. The more you pay up front and the longer the contract, the greater the discount (Cannot be moved across regions)
             - Convertible Reserver instances - offer up to 54% off on demand capability to change the attributes of the RI as long as the exchange results in the creation of Reserver Instances of equal or greater value
             - Scheduled Reserver instances - are available to launch within the time windows you reserve. It allows you to match your capacity reservation to a predictable recurring schedule that only requires a fraction of a day, week, month
     - **Spot** - enables you to bid whatever price you want for instance capacity, providing for even greater savings if your applications have flexible start and end time. You state the price, once price is meet, instance is created. If price increases, the instance will be removed.
@@ -239,6 +239,7 @@ __EBS__
 - To create a snapshot, you should stop the instance before taking the snapshot. But you can take it while running
 - You can create AMis from snapshits
 - Volumes are always in the same region as EC2.
+- By default DeleteOnTermination is true for root volume, but can be unset
 
 *Types*
 1. General Purpose (SSD)
@@ -259,6 +260,7 @@ Can be selected on
     1. Instance Store (Emhemeral storage) - cannot be stopped. If underlying host fails, you will lose your data
     2. EBS backed volumes - can be stopped. Will not lose your data if instace is stopped
 - By default both ROOT volumes will be deleted on EC2 termination. However, with EBS volumes, you can tell AWS to keep the root device volume
+- You can't delete a snapshot of the root device of an EBS volume used by a registered AMI. You must first deregister the AMI before you can delete the snapshot.
 
 
 __ENI, ENA, EFA__

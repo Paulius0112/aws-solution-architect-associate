@@ -1,198 +1,3 @@
-# Notes for AWS Certified Solutions Architect Associate
-
-I recently got the AWS solutions architect associate certificate in July 2019, and wanted to share my notes with anyone who might benefit from it. The path I followed was
-
-- Go through the [ACloudGuru course](https://click.linksynergy.com/deeplink?id=aosskmXRdYk&mid=39197&murl=https%3A%2F%2Fwww.udemy.com%2Faws-certified-solutions-architect-associate%2F).
-- Attempt the [Whizlabs practice tests](https://www.whizlabs.com/aws-solutions-architect-associate/). After each test, note down the concepts I had difficulties with. 
-- Attempt the [practice tests by Jon Bonso at Udemy](https://click.linksynergy.com/deeplink?id=aosskmXRdYk&mid=39197&murl=https%3A%2F%2Fwww.udemy.com%2Faws-certified-solutions-architect-associate-amazon-practice-exams%2F). Again, after each test, note down the concepts I had difficulties with.
-
-So you should go through the notes only after you have done a course that explains the basics, such as the one from ACloudGuru. Also, full disclosure, the links to the above courses are referral ones. So if these notes helped you and you're planning to buy the courses or practices tests, please consider going through the links when you're buying.
-
-__Note__ — You can also check out [this blog post](https://sumit-ghosh.com/articles/aws-solutions-architect-associate-preparation/) where I describe my preparation strategy in detail. 
-
-## Contents
-
-- [Well-Architected Framework](#well-architected-framework)
-- [Route 53](#route53)
-- [S3](#s3)
-- [RDS, Redshift and ElastiCache](##rds-redshift-and-elasticache)
-- [EBS](#ec2-and-ebs)
-- [EFS](#efs)
-- [ELB and Autoscaling](#elb-and-autoscaling)
-- [SQS](#sqs)
-- [SNS](#sns)
-- [API Gateway](#api-gateway)
-- [Lambda](#lambda)
-- [VPC](#vpc)
-- [DynamoDB](#dynamodb)
-- [ECS](#ecs)
-- [Elastic Beanstalk](#elastic-beanstalk)
-- [Storage Gateway](#storage-gateway)
-- [IAM, Cognito and Directory Services](#iam-cognito-and-directory-services)
-- [KMS and CloudHSM](#kms-and-cloudhsm)
-- [Kinesis](#kinesis)
-- [EMR](#emr)
-- [Misc](#misc)
-
-
-
-# Well-Architected Framework
-
-The five pillars are —
-
-1. Operational Excellence 
-2. Security
-3. Reliability
-4. Performance Efficiency
-5. Cost Optimization
-
-
-## Operational Excellence
-
-### Design Principles
-
-- Perform operations as code
-- Annotate documents
-- Make frequent, small, reversible changes
-- Refine operations procedures frequently
-- Anticipate failure
-- Learn from all operational failures
-
-### Best Practices
-
-- Prepare
-- Operate
-- Evolve
-
-__Key AWS Service__ — AWS CloudFormation.
-
-
-## Security
-
-### Design Principles
-
-- Implement a strong identity foundations
-- Enable traceability
-- Apply security at all layers
-- Automate security best practices
-- Protect data in transit and at rest
-- Keep people away from data
-- Prepare for security events
-
-### Best Practices
-
-- Identity and Access Management
-- Detective Controls
-- Infrastructure Protection
-- Data Protection
-- Incident Response
-
-__Key AWS Service__ — AWS Identity and Access Management (IAM).
-
-
-## Reliability
-
-### Design Principles
-
-- Test recovery procedures
-- Automatically recover from failure
-- Scale horizontally to increase aggregate system availability 
-- Stop guessing capacity
-- Manage change in automation
-
-### Best Practices
-
-- Foundations
-- Change Management
-- Failure Management
-
-__Key AWS Service__ — Amazon CloudWatch.
-
-
-## Performance Efficiency
-
-### Design Principles
-
-- Democratize advanced technologies
-- Go global in minutes
-- Use serverless architecture
-- Experiment more often
-- Mechanical sympathy
-
-### Best Practices
-
-- Selection
-    - Compute
-    - Storage
-    - Database
-    - Network
-- Review
-- Monitoring
-- Tradeoffs
-
-__Key AWS Service__ — Amazon CloudWatch.
-
-
-## Cost Optimization
-
-### Design Principles
-
-- Adopt a consumption model
-- Measure overall efficiency
-- Stop spending money on data center operations
-- Analyze and attribute expenditure
-- Use managed and application level services to reduce cost of ownership
-
-### Best Practices
-
-- Expenditure Awareness
-- Cost-Effective Resources
-- Matching Supply and Demand
-- Optimizing Over Time
-
-__Key AWS Service__ — Cost Explorer.
-
-
-
-
-
-# Route53
-
-
-__Main functions of Route53__ —
-1. Register domain names.
-2. Route internet traffic to the resources for your domain.
-3. Check the health of your resources.
-
-It's not used to _distribute_ traffic.
-
-__CNAME vs ALIAS__ —  
-
-- For routing to S3 bucket // Elastic load balancer use A record with ALIAS.  
-- For routing to RDS instance use CNAME with NO ALIAS // without ALIAS.
-
-ALIAS only supports the following services —
-- API Gateway
-- VPC interface endpoint
-- CloudFront distribution
-- Elastic Beanstalk environment
-- ELB load balancer
-- S3 bucket that is configured as a static website
-- Another Route 53 record in the same hosted zone
-
-
-Route53 does not directly log to S3 bucket, we can forward that from Cloudwatch, but can't do it directly.
-
-Types of __Route53 health checks__ —
-1. Health checks that monitor __an endpoint__. This __can be on-premise__ too.
-2. Health checks that monitor __other health checks__.
-3. Health checks that monitor __Cloudwatch alarms__. 
-
-__Multivalue answer routing policy__ responds with upto 8 healthy records selected at __random__.
-
-__Weighted routing policy__ is a good fit for __blue-green deployments__.
-
-
 # EC2
 
 - is a web service that provides resizable compute capacity in the cloud. It reduces the time required to obtain and boot new server instances to minutes, allowing you to quickly scale capacity, both up and down, as your computing requirements change.
@@ -210,6 +15,8 @@ __Weighted routing policy__ is a good fit for __blue-green deployments__.
             - Standard Reserver instances - offer up to 75% off demand instances. The more you pay up front and the longer the contract, the greater the discount (Cannot be moved across regions)
             - Convertible Reserver instances - offer up to 54% off on demand capability to change the attributes of the RI as long as the exchange results in the creation of Reserver Instances of equal or greater value
             - Scheduled Reserver instances - are available to launch within the time windows you reserve. It allows you to match your capacity reservation to a predictable recurring schedule that only requires a fraction of a day, week, month
+        - __Reserved Instances that are terminated__ are **still billed** until the end of their term according to their payment option.
+        - *Note* - if it is scheduled to run only a short period, it might not be efficient to use reserved instances, because you need to pay for the whole year
     - **Spot** - enables you to bid whatever price you want for instance capacity, providing for even greater savings if your applications have flexible start and end time. You state the price, once price is meet, instance is created. If price increases, the instance will be removed.
         - Application that are only feasible at very low computing prices
         - Applications that have flexible start and end time.
@@ -220,6 +27,7 @@ __Weighted routing policy__ is a good fit for __blue-green deployments__.
         - Great for licensing which does not support multi-tenancy or cloud deployments
         - Can be purchased On-Demand (hourly)
         - Can be purchased as a Reservation for up to 70% off the On-Demand price
+        - With __EC2 dedicated hosts__ we have control over __number of cores__, not anywhere else.
 
 __Security groups__
 - All Inbound traffic is blocked by default
@@ -231,15 +39,25 @@ __Security groups__
 - You can only specify allow rules, not deny
 
 __EBS__
-- Elastic Block Storage - provides persistent block storage volumes for use with EC2. Each EBS volume is automatically replicated within its AZ to protect you from component failure, offering high availability and durability
+- *Elastic Block Storage* - provides **persistent block storage volumes** for use with EC2. Each EBS volume is **automatically replicated within its AZ** to protect you from component failure, offering high availability and durability
 - To change the region of EBS, first create a snaphot to capture the image, create an AMI from the snapshit and then use the AMI to launch the EC2 in a new AZ
-- When terminate EC2, the root volume will be deleted. However, additional volumes will remain
-- Snapshots exist on S3 while volumes exist on EBS
 - Snapshot are point in time copies of volumes.
-- To create a snapshot, you should stop the instance before taking the snapshot. But you can take it while running
-- You can create AMis from snapshits
+    - To create a snapshot, you should stop the instance before taking the snapshot. But you can take it while running
+    - Snapshots exist on S3 while volumes exist on EBS
+    - EBS snapshots are more efficient and cost-effective solution compared to __disk mirroring using RAID1__.
+- You can create AMIs from snapshits
 - Volumes are always in the same region as EC2.
-- By default DeleteOnTermination is true for root volume, but can be unset
+- By default *DeleteOnTermination* is true for root volume, but can be unset
+    - When terminate EC2, the root volume will be deleted. However, additional volumes will remain
+- We can use Amazon __Data Lifecycle Manager__ to automate taking backups // snapshots of EBS volumes, and protect them from accidental or unwanted deletion.
+- __EBS-optimized EC2 instances__ provide additional, dedicated capacity for EBS IO. Helps squeeze out the last ounce of performance.
+- Encrypted EBS volumes are not supported on all instance types.
+- EBS is __lower-latency__ than EFS.
+- EBS volumes can only be attached to an EC2 instance in the __same Availability Zone__.
+- __To get more performance out of EBS volumes__ —
+    1. Use a more modern Linux Kernel.
+    2. Use RAID 0.
+- The best I/O performance can be achieved is by using *instance store volumes*, rather than **ebs**
 
 *Types*
 1. General Purpose (SSD)
@@ -257,8 +75,9 @@ Can be selected on
 - Architecture (32-bit or 64-bit)
 - Launch Permissions
 - Storage for the Root device
-    1. Instance Store (Emhemeral storage) - cannot be stopped. If underlying host fails, you will lose your data
-    2. EBS backed volumes - can be stopped. Will not lose your data if instace is stopped
+    1. **Instance Store** (Emhemeral storage) - cannot be stopped. If underlying host fails, you will lose your data
+        - Is great for temporary storage of information that changes frequently or for data that is replicated across a fleet of instances
+    2. **EBS backed volumes** - can be stopped. Will not lose your data if instace is stopped
 - By default both ROOT volumes will be deleted on EC2 termination. However, with EBS volumes, you can tell AWS to keep the root device volume
 - You can't delete a snapshot of the root device of an EBS volume used by a registered AMI. You must first deregister the AMI before you can delete the snapshot.
 
@@ -274,6 +93,10 @@ __ENI, ENA, EFA__
     7. A mac address
     8. A source/destination check flag
     9. Description
+- You can attach a network interface (ENI) to an EC2 instance in the following ways —
+    1. When it's running. Hot attach.
+    2. When it's stopped. Warm attach.
+    3. When the instance is being launched. Cold attach.
 
 - *EN - Enhanced networking*. Uses single root I/O virtualization to provide high-performance networking capabilities on supported instance types
     1. Provides higher I/O performance and lower CPU utilization when compared to traditional virtualised network interface. Provides higher bandwidth, packet per second performance and lower inter-instance latencies. There is no additional charge for using enhanced networking, but EC2 must support it.
@@ -315,7 +138,7 @@ __SPOT instances and fleets__
 - Can't be hibernated for more than 60 days
 
 *Cloudtrail*
-- increases visibility into your user and resource activity by recording AWS Management COnsole actions and API calls
+- increases visibility into your user and resource activity by recording AWS Management Console actions and API calls
 
 *Cloudwatch*
 - Can monitor most of AWS as well as your applications that run on AWS
@@ -329,24 +152,40 @@ __SPOT instances and fleets__
 - Roles are universal - can be used in any region
 
 *EFS*
-- Elastic file system - file storage for EC2
+- **Elastic file system** - file storage for EC2
 - Provides simple interface that allows you to create and configure file systems quickly and easily
-- Storage capacity is elastic, growing and shrinking automatically as you add and remove files
-- Instances can share single EFS, but not EBS
-- Integrates life cycle policies
-- Requires NFS protocol allowed in the security group to communicate with EC2
+- Storage capacity is elastic, **growing and shrinking automatically** as you add and remove files
+- Instances **can share single EFS**, but not EBS
+- Integrates **life cycle policies**
+- Requires **NFS protocol allowed** in the security group to communicate with EC2
+    - __NFS port 2049__ for EFS.
 - You pay only for what you use
-- Can support thousands of concurrent NFS connections and can scale up to the petabytes
-- Data is stored across multiple AZ's within a region
+- Can **support thousands of concurrent NFS connections** and can scale up to the petabytes
+- Data is stored across** multiple AZ's** within a region
 - Read After Write consistency
 - EC2 running windows cannot connect to EFS, only linux and unix based. If it is windows server, it should use FSx Windows
+- EFS supports cross availability zone mounting, but it is not recommended. The recommended approach is __creating a mount point in each availability zone__.
+- You can mount an EFS file system in only one VPC at a time. If you want to access it or mount it from another VPC, you have to create a __VPC peering connection__. You should note that all of these must be within the same region.
+- __Encryption__
+    1. Encryption at rest must be specified at the creation of file system. If you want to modify it later on, create a new EFS file system with encryption enabled and copy the data over.
+    2. Encryption at transit is supported by EFS // NFS, and must be enabled from the client side. It simply uses SSL to encrypt the connection.
+- __Performance mode__
+    1. General purpose must be used for most purposes, it has low latency, so ideal for web applications.
+    2. Max IO is ideal for big data and parallel connection and processing from a large number of hosts. It has higher latency but large throughput.
+- __Throughput mode__
+    1. Bursting is ideal for arbitrary large amount of data, because it scales properly.
+    2. But for cases with high throughput to storage ratio, such as common in web applications, provisioned mode is better.
+
+
 
 *FSx (File Server)* 
 - **For windows**: provides a fully managed native Microsoft Windows file system so you can easily move your Windows-based applications that require file storage to AWS. It is built on Windows server
     1. It is a managed Windows Server that runs Windows Server Message Block (SMB)-baed file services
     2. Designed for windows
+    3. Integrates **Microsoft Active Directory** and can me mounted on your on-premise infrastructure
 - **FSx for Lustre** - fully managed file system that is optimized for compute-intensive workloads, such as high-performance computing, ML, media data processing workflows and electronic design automatino (EDA
     1. You can launch and run a Lustre file system that can process massive data sets at up to hundreds of gigabytes per second of throughput, millions of IOPS and sub-milisecond latencies
+    2. When linked to an S3 bucket, objects in **FSx** are presented as files 
 
 **When to use EFS, FSx for windows or FSx for Lustre**
 - EFS - when you need distributed, highly resilient storage for Linux instances and linux-based applications
@@ -354,26 +193,26 @@ __SPOT instances and fleets__
 - FSx for Lustre - when you need high-speed, high-capacity distributed storage. It can store data directly on S3
 
 __EC2 placement groups__
-- When you launch a new EC2 instance, the EC2 service attempts to place the instance in such a way that all of your instances are spread out across underlying hardware to minimize correlated failures.
-- The name for placement group must be unique within your AWS account
+- When you launch a new EC2 instance, the EC2 service **attempts to place the instance in such a way that all of your instances are spread out across underlying hardware to minimize correlated failures.**
+- The name for placement group must be **unique** within your AWS account
 - You cant merge placement groups
-- You can move existing instance into a placement group. Before you can move the instance, the instsance must be stopped. It can only be achieved using AWS CLI or SDK, not yet with a console
-1. Clustered Placement group
-    - Grouping instances within a single AZ (put them very close together)
-    - Recommented for applications that need low network latency, high network throughput, or both
-    - Only certain instances can be launched in this group
-    - Cant span multiple AZ, all other groups can
-    - AWS recommneds homogenous instances within clustered pplacement group
-2. Spread Placement group
-    - Each instance is placed on distinct underlying hardware
-    - Recommended for applications that have a small number of critical instances that should be kept separate from each other
-    - For example if one applications fails, it should not effect the others
-    - Can have in different AZ within a region
+- You can move existing instance into a placement group. Before you can move the instance, the instsance must be stopped. It *can only be achieved using AWS CLI or SDK*, not yet with a console
+1. *Clustered Placement group*
+    - Grouping instances within a **single AZ** (put them very close together)
+    - Recommented for applications that need **low network latency, high network throughput, or both**
+    - Only **certain instances** can be launched in this group
+    - Can't span multiple AZ, all other groups can
+    - AWS recommneds **homogenous instances** within clustered placement group
+2. *Spread Placement group*
+    - Each instance is placed on **distinct** underlying hardware
+    - Recommended for applications that have a small number of **critical instances that should be kept separate from each other**
+        - For example if one applications fails, it should not effect the others
+    - Can have in **different AZ within a region**
     - Think like separate instances
-3. Partitioned
-    - AWS divides each group into logical segments called partitions.
-    - Each partition within a placement group has its own set of racks. Each eack has its own network and power source.
-    - No two partitions within a placement group share the same racks, allowing you to isolate the impact of hardware failure within your application
+3. *Partitioned*
+    - AWS divides each group into **logical segments called partitions.**
+    - Each partition within a placement group has its own **set of racks**. Each eack has its **own network and power source.**
+    - No two partitions within a placement group share the same racks, allowing you to **isolate** the impact of hardware failure within your application
     - Think like multiple instances
 
 __High performance computing (HPC)__
@@ -419,3 +258,11 @@ __WAF__
     2. Block all requests except the ones you specify
     3. Count the requests that match the properties you specify
 
+__Storage gateway__
+- Hybrid storage between on-premises environments and the AWS Cloud
+- Low latency performance by caching frequently accessed data onpremises and storing securely on AWS
+- Often used for disaster recovery or backups
+- Supports three storage interfaces: file, volume, tape
+- Data **in-transit** is always encrypted with SSL
+    - All data stored by AWS Storage Gateway in S3 is encrypted server-side
+    

@@ -132,7 +132,7 @@ Can be selected on
     - Think like separate instances
 3. **Partitioned**
     - AWS divides each group into **logical segments called partitions.**
-    - Each partition within a placement group has its own **set of racks**. Each eack has its **own network and power source.**
+    - Each partition within a placement group has its own **set of racks**. Each rack has its **own network and power source.**
     - No two partitions within a placement group share the same racks, allowing you to **isolate** the impact of hardware failure within your application
     - Think like multiple instances
 

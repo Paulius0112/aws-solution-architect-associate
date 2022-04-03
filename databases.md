@@ -43,6 +43,7 @@ __Databases__
 - The memory and processor __usage by each process__ in an RDS instance can not be monitored by Cloudwatch, we have to use __RDS Enhanced Monitoring__ for that. Because Cloudwatch monitors the hypervisor, not the individual instances.
 - __IAM DB authentication__ can be used with __MySQL and PostgreSQL__. With this, you don't need to use a password when you connect to a DB instance. Instead, you use an __authentication token__.
 - When you need to distribute load (such as for analytics), better to create **replica** and use that for analytics
+- **Managed service** - and you do not have access to the underlying EC2 instance (no root access)
 
 __Backups with RDS__
 - Whenever you restore RDS (with bots methods), the new database will be created with a new DNS endpoint
@@ -63,6 +64,22 @@ __RDS Encryption__
 - Once **at rest encryption** is enabled, data, automated backups, snapshots and read replicas are encrypted as well
 - Can only enabled while creating a database
 - **SSL/TLS encryption in transit** - can be enabled by downloading AWS-provided root certificates and use them when connecting to DB. You can download one certificate for all regions or only region-specific
+
+__Scalability of RDS__
+- You can only scale RDS up (compute and storage)
+- You cannot decrease the allocated storage for an RDS instance
+- You can scale storage and change the storage type for all DB engines except MS SQL
+    - Workaround is to create a new instance from snapshot with the new configuration
+- Scaling compute will cause downtime
+    - Scaling storage can happen while the RDS instance is running without outage however there may be performance degradation
+- You can choose to have changes take effect immediately, however, the default is within the maintenance window
+- All RDS types support a maximum DB size of 64 TiB except for Microsoft SQL server (16 TiB)
+
+__HA approaches for databases__
+- If possible, choose DynamoDB over RDS because of inherent fault tolerance
+- If DynamoDB cant be used, choose Aurora because of redundancy and automatic recovery features
+- If Aurora cant be used, choose Multi-AZ RDS
+- Frequent RDS snapshots can protect aginst data corruption or failure, and they won't impact performance of Multi-AZ deployment
 
 - *RedShift (OLAP - online analytics processing)*
     - Used for Business Intelligence or Data Warehousing
@@ -162,6 +179,9 @@ __Database Migration Service DMS__
     1. *Homogenous* for identical database engines (no need SCT)
     2. *Heterogeneous* for different databases. Need SCT
 - The source can be on-premises, inside AWS itself or another cloud providers
+- The source database remains fully operational during the migration, minimizing downtime to applications that rely on the database
+- DMS is used for smaller, simpler conversions and supports MongoDB and DynamoDB
+- SCT is used for larger, more complex datasets like data warehouses
 
 
 __Caching capabilities__
@@ -183,3 +203,22 @@ __Amazon EMR__
 
 
 - You don't need to specify a destination port number when you create DB security group rules. The port number defined for the DB instance is used as the destination port number for all rules defined for the DB security group.
+
+
+__Notes on databases__
+| Data Store | When to use |
+|------------|-------------|
+| **Database on EC2** | Ultimate control over database, preferred DB not available under RDS |
+| **RDS** | Need OLTP relational database, your data is well formed and structured, existing apps requiring RDSMS |
+| **DynamoDB** | Name/value pair data or unpredictable data structure, in-memory performance with persistence, high I/O needs, scale dynamically |
+| **RedShift** | Massive amounts of data, primarily OLAP workloads |
+| **ElastiCache** | Fast temporary storage for small amounts of data, highly volatile data |
+
+__Anti-patterns__
+| Requirement | More Suitable Service | 
+|-------------|-----------------------|
+| Lots of binary objects (BLOBs) | S3 |
+| Automated scalability | DynamoDB |
+| Data is not well structured or unpredictable | DynamoDB |
+| Other database platforms not supported by RDS | EC2 |
+| Complete control over the database | EC2 |

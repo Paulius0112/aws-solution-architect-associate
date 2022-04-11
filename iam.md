@@ -24,6 +24,7 @@ __AWS Managed Microsoft AD__
         - Federation
 
 __Simple AD__
+- Simple user directory, or you need LDAP compatibility
 - Standalone managed directory
 - Basic AD features
 - There are two sizes: Small <= 500; Large <= 5k users
@@ -34,6 +35,7 @@ __AD connector__
 - Avoid caching information in the cloud
 - Allow in-premises users to log in to AWS using AD
 - Scale across multiple AD connectors
+- Must have an existing AD
 
 __Cloud directory__
 - Directory-based store for developers
@@ -52,6 +54,13 @@ __AD vs Non-AD compatible services__
 - Non compatible
     1. Cloud directory
     2. Cognito user pools
+
+
+__Service Control Policies__
+- Allow to manage your permissions in your organization
+- SCPs aren't available if your organization has enabled only the consolidated billing features
+- It does not guarante any permissions, only set limits on the actions that the account's administrator can delegate to the IAM users and roles
+- Affect only IAM users and roles, but don't affect resource-based policies directly.
 
 
 __IAM policies__
@@ -85,7 +94,8 @@ __AWS SSO__
 
 
 
-
+__IAM Groups__
+- They are not an identity
 
 
 __Amazon Cognito__ has two __authentication methods__, __independent__ of one another —

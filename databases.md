@@ -18,6 +18,7 @@ __Databases__
         - In the event of maintenance, failure or AZ failure, RDS will automatically failover to the standby so that database operations can resume quickly without administrative intervention
         - Available for SQL Server, Oracle, MySQL server, PostgreSQL, MariaDB
         - You can force a failover from one AZ to another by rebooting the RDS instance
+        - You can only read/write to the primary, read only to the read replica
     2. Read replicas - for performance
         - Replicated data from primary to seondary database instances
         - On fail, you need manualy update connection string with new URL pointing to secondary database instance
@@ -82,48 +83,75 @@ __HA approaches for databases__
 - Frequent RDS snapshots can protect aginst data corruption or failure, and they won't impact performance of Multi-AZ deployment
 
 - *RedShift (OLAP - online analytics processing)*
-    - Used for Business Intelligence or Data Warehousing
-    - Is great for *complex queries* and improves performance for repeated *queries* by caching
-    - Fast and powerful, fully managed, petabyte-scale data warehouse service in the cloud
-    - Can start small from just 0.25 dollars per hour with no commitments or upfront costs and scale to petabyte or more for 1000 dollars per terabyte per year, less than a tenth of most other dtaa warehousing solutions
+    - Cost-effective to analyze all your data using standard SQL and existing BI tools
+    - Clustered peta-byte scale data warehouse
+    - SQL based for **analytics** application
+        - Useful for running complex analytic queries against petabytes of *structured* data
+        - Data is stored in columns for better performance
+        - Automatically selects compression scheme
+    - Provides *massively parallel processing* by distributing data and queries across all nodes
+    - Can have both SSD and HDD
+    - *Features parallel processing* and *columnar data stores* which are optimized for complex queries
+    - Can store huge amounts of data but cannot ingest huge amounts of data in real time
     - Can be configured as follows:
         1. *Single Node (160Gb)*
         2. *Multi-Node*
             - *Leader Node* - manages client connections and receives queries
             - *Compute Node* - store data and perform queries and computations. Up to 128 Compute Nodes
-    - *Uses advanced compression*
-        - Columnar data stores can be compressed much more than row-based data stores because similar data is stored sequentially on disk.
-        - Doesn't require indexes, so uses less space than traditional RDS
-        - Uses multiple compression techniques (when uploading the data, AWS automatically samples your data and selects the most appropriate compression scheme)
-    - *Massively Parallel Processing (MPP)*
-        - Automatically distributes data and query load across all nodes
-        - Makes easy to add nodes to your data warehouse and enables you to maintain fast query performance as your data warehouse grows
-    - *Backups*
-        - Enabled by default with 1 day retention period
-        - Maximum retention period is 35 days
-        - Always attempts to maintain at least three copies of your data (the original and replica on the compute nodes and a backup in S3)
-        - Can also asynchronously replicate your snapshots to S3 in another region for disaster recovery
+    - **Amazon RedShift Spectrum** - feature that enables you to run queries against exabytes of unstructured data in Amazon S3, with no loading required
+
+- *Availability and durability of redshift*
+    - Uses replication and continuous backuops to enhance availability and durability
+    - Automatically recovers from component or node failures
+    - Only available in one AZ
+        - You can run data warehouse clusters in multiple AZ's by loading data into two RedShift data warehouse clusters in separate AZs from the same set of Amazon S3 
+    - Replicates your data within your cluster and backs up your data to s3
+    - Always attempts to maintain at least three copies of your data (the original and replica on the compute nodes and a backup in S3)
+    - Single-node clusters do not support data replication (in a failure scenario you would need to restore from a snapshot)
+    - Scaling requires a period of unavailability of a few minutes (typically during the maintenance window)
+    - By default, Amazon Redshift retains backups for 1 day. You can configure this to be as long as 35 days
+    - Manual backups are not automatically deleted when you delete a cluster.
+
+- *Security of RedShift*
+    - You can load encrypted data from S3
+    - Supports SSL encryption in transit
+    - CloudTrail integration
+    - Takes care of key management or you can manage your own KMS
+
+
+- *High availability for RedShift:*
+    - Currently, RedShift does not support Multi-AZ deployments.
+    - The best HA option is to use multi-node cluster which supports data replication and node recovery.
+    - A single node RedShift cluster does not support data replication and you’ll have to restore from a snapshot on S3 if a drive fails.
+
+    - Used for Business Intelligence or Data Warehousing
+    - Is great for *complex queries* and improves performance for repeated *queries* by caching
+    - Fast and powerful, fully managed, petabyte-scale data warehouse service in the cloud
+    - Can start small from just 0.25 dollars per hour with no commitments or upfront costs and scale to petabyte or more for 1000 dollars per terabyte per year, less than a tenth of most other dtaa warehousing solutions
     - *Pricing*
         - Compute node hours (total number of hours per compute node. You are not charged for leader node hours)
         - Backup
         - Data transfer (only within VPC, not outside)
-    - *Security considerations*
-        - Encrypted in transit using SSL
-        - Encrypted at rest using AES-256 encryption
-        - By default RedShift takes care of key management
-            - But you can manage your keys through HSM (Hardware securiy module) or KMS
-    - *Availability*
-        - Currently only available in 1 AZ
-        - Can restore snapshots to new AZs in the event of an outage
 
 
 - *ElastiCache*
     - Web service that makes it easy to deploy, operate and scale an in-memory cache in the cloud.
     - Improves performance by retrieving information fast (basic cache working principals)
     - The problem with overloading database can be using elastiCache or Read Replicas.
+    - Best for scenarios where the DB load is based on OLAP transactions
+    - Push-button scalability for memory, reads and writes (without downtime)
+    - Billed by node size and hours of use
+    - Can be on-demand or reserved instances
     - Supports two open-source in-memory caching engines:
         1. Memcached (simple and easy to start)(Multi-threaded performance)
         2. Redis (advanced) (Multi-AZ, backups, Pub/Sub, Advanced data types, replication)
+            - Can have authenitcation tokens enabled to require a password/token before allowing clients to execute commands
+    | Memcached                                      | Redis                                        |
+    |------------------------------------------------|----------------------------------------------|
+    | Simple                                         | You need encryption                          |
+    | You need elasticity (scale out and in)         | You need HIPAA compliance                    |
+    | You need to run multiple CPU cores and threads | Support for clustering                       |
+    | You need to chache objects                     | Complex data types, HA or Pub/Sub capability |
 
 __DynamoDB__
 - Fast and flexiable NoSQL database service for all applications needing consistent, singe-digit milisecond latency at any scale.
@@ -143,6 +171,11 @@ __DynamoDB__
 - We can turn on __autoscaling for DynamoDB__.
 - For __write heavy__ use cases in __DynamoDB__, use partition keys with large number of distinct values.
 - __DynamoDB Accelerator, DAX__ is an __in-memory cache for DynamoDB__ that reduces response time from milliseconds to microseconds.
+- **Best practises**
+    - Keep item sizes small
+    - Store more frequently and less frequently accessed data in separate tables
+    - If possible compress larger attribute values
+    - Store objects larger than 400kb in S# and use pointers from S3 object ID in DynamoDB 
 
 
 __DynamoDB Accelerator (DAX)__
@@ -170,10 +203,15 @@ __Aurora__
     - Automated backups are always enabled on Aurora and dont impact performance
     - Can take snapshots and does not impact performance
     - You can share snapshots with other AWS accounts
+- *Aurora Global database*
+    - Consists of one primary AWS region where your data is mastered, and up to five read-only, secondary AWS regions. 
+    - Can issue writes only to main database
+- *Aurora Serverless*
+    - On-demand, auto-scaling configuration for amazon aurora. It automatically starts up, shuts down, and scales capacity up or down based on application needs. Ideal solution for infrequently-used applications
 
 __Database Migration Service DMS__
 - Migrate database into the AWS cloud, between on-premise instances, or between combinations of cloud and on-premises setups
-- It is service on cloud that runs replication software.
+- The source database remains fully operational during the migration, minimizing downtime to applications that rely on the database
 - You can pre-create the target tables manually, or you can use *AWS Schema Conversion Tool* to create some or all of the target tables, indexes...
 - Types of migrations:
     1. *Homogenous* for identical database engines (no need SCT)
@@ -182,15 +220,10 @@ __Database Migration Service DMS__
 - The source database remains fully operational during the migration, minimizing downtime to applications that rely on the database
 - DMS is used for smaller, simpler conversions and supports MongoDB and DynamoDB
 - SCT is used for larger, more complex datasets like data warehouses
-
-
-__Caching capabilities__
-- Technologies
-    - Cloudfront
-    - API Gateway
-    - ElastiCache
-    - DynamoDB Accelerator
-- The more caching is placed infront, the less latency there will be
+- Supported migration paths:
+    1. On-premises and EC2 databases to Amazon RDS or Aurora
+    2. Homogeneous migrations such as Oracle to Oracle
+    3. Heterogeneous migrations between different database platforms
 
 __Amazon EMR__
 - Big data platform for processing vast amounts of data using open-source tools such as Apache Spark, Hive, Flink.

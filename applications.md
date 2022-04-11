@@ -48,6 +48,55 @@ __SNS__
     - Pay as you go
 
 __API gateway__
+- Supports:
+    1. Creating and deploying REST API to expose HTTP endpoints, AWS Lambda functions and other services
+    2. Web Sockets
+    3. Invoke exposed API methods
+- Infrastructure architecture
+    1. Together with lambda, **API Gateway** forms the app-facing part of the AWS serverless
+    2. Back-end services include EC2, Lambda or any web application (public or private endpoint)
+- Provides REST API that uses JSON and exposes HTTPS endpoint (and only HTTPS)
+- Can have a certificate and send each endpoint to a different target
+- CloudFront is used as the public endpoint for API gateway
+- By default API gateway assigns an internal domain that automatically uses the API gateway certififcates
+- *Endpoint types*
+    1. **Edge-Optimized Endpoint** - best for geographical distributed clients (default type). Is used
+    across all regions and capitalize the name of HTTP headers
+    2. **Regional Endpoint** - intended for clients in the same region. 
+        - When a client on EC2 instance calls an API in the same region, or when an API is intended to serve a small number of clients with high demand. Reduced connection overhead
+    3. **Private endpoint** - can only be accessed from VPC using an interface VPC endpoint, which is an endpoint network interface (ENI) that you create in your VPC
+
+- *API gateway API's*
+    1. **REST API** - collection of HTTP resources and methods that are integrated with backend HTTP endpoints.
+        - Can be deployed in one or more stages
+    2. **WebSocket API** - collection of WebSocket routes and route keys that are integrated with backend HTTP endpoint
+- *Deployments* are a snapshot of the APIs resources and methods. They must be created and associated with a stage for anyone to access the API
+- *Stages and Stage variables*
+    - *Stage* is a logical reference to a lifecycle state of your REST or WebSocket api
+    - API stages are identified by API ID and stage name
+    - Stage variables are like environment variables
+    - Variables can be used to pass configuration parameters to AWS lambda through mapping templates
+- *Caching*
+    - You can add caching to API calls by provisioning an Amazon API gateway cache and specifying its size in gigabytes
+    - Allows to cache endpoint's response
+    - Reduces the number of calls to the backend and improves latency
+    - Default TTL is 300 seconds while maximum is 3600
+    - Caches are defined by stage
+    - You can encrypt caches
+    - You can override cache settings for specific methods and can invalidate entire cache
+    - Clients can invalidate the cache with the header: *Cache-Control: max-age=0*
+- *API throttling*
+    - API sets a limit on a steady-state rate and a burst of request submissions against all APIs in your account
+    - Limits:
+        - By default, API gateway limits *10000 requests per second*
+        - Maximum concurent requests is 5000 requests across all APIs
+        - If you go over the limit, you will receive *429 Too Many Requests*
+    - *Two types of throttling*:
+        - **Server side** - limits are applied across all clients. These limit settings exist to prevent your API from being overwhelmed by too many requests
+        - **Per-client** - limits are applied to clients that use API keys associated with your usage policy as a client identifier
+- *Usage plans and API keys*
+    - Specifies who can access one or more deployed API stages and methods, and how much and how fast they can access them
+    - You can use them to configure throttling and quota limits
 - Expose HTTPS endpoints to define a RESTful API
 - Connect to other services
 - Scale effortlessly (automatically)

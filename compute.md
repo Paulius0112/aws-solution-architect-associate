@@ -44,17 +44,23 @@
         - Complete isolation
         - Most expensive option
         - Have control over number of cores
+        - *Billing per host*
     5. **Dedicated Instances**
         - Virtualized instances on hardware just for you
         - Uses physically dedicated EC2 servers
         - Does not provide the additional visibility and controls of dedicated hosts
         - May share hardware with other non-dedicated instances in the same account
         - Available as On-Demand, Reserver instances, and Spot instances
+        - *Billing per instance*
 - You are limited to running up to total of 20 On-Demand instances across the instance family, purchasing 20 Reserved instances
 - Linux instances are charged by seconds, all other instances by hour
 - Data between instances in different regions is charged (in and out)
 - **On-Demand Capacity Reservation** and **Zonal Reserved Instances** provide a capacity reservation for EC2 instances in a specific AZ
-
+- **Reasons why your instance might immediately terminate**
+    - You have reached your maximum limit of EBS volume
+    - EBS snapshot is corrupt
+    - EBS root volume is encrypted and you do not have permission for decryption
+    - AMI is missing required part
 
 ## Security groups
 - All Inbound traffic is blocked by default
@@ -148,6 +154,7 @@ Can be selected on
 - It is a **region-specific** service
 - No cost for auto scaling, only for resources
 - **Launch configuration** is the template used to create new EC2 instances and include parameters such as instance family, type, AMI, key pair and security groups
+    - You can't edit launch configuration, you need to create new one
 - **Types**
 | Scaling        | Description                                                      | When to use                                                               |
 |----------------|------------------------------------------------------------------|---------------------------------------------------------------------------|

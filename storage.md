@@ -42,6 +42,54 @@
     - You cannot decrease an EBS volume size
     - When changing volumes the new volume must be at least the size of the current volume's snapshot
 - Images can be made public but not if they're encrypted
+- Types
+    1. **SSD, General Purpose – gp2/gp3**
+        - Volume size from 1 GiB to 16 TiB.
+        - Up to 16,000 IOPS per volume.
+        - Performance:
+            - 3 IOPS/GiB for gp2.
+            - Up to 500 IOPS/GiB for gp3.
+        - Can be a boot volume.
+        -  EBS multi-attach not supported.
+        - Use cases:
+            - Low-latency interactive apps.
+            - Development and test environments.
+    2. **SSD, Provisioned IOPS – io1/io2**
+        - More than 16,000 IOPS.
+        - Up to 64,000 IOPS per volume (Nitro instances).
+        - Up to 32,000 IOPS per volume for other instance types.
+        - Performance:
+            - Up to 50 IOPS/GiB for io1.
+            - Up to 500 IOPS/Gib for io2.
+        - Can be a boot volume.
+        - EBS multi-attach is supported.
+        - Use cases:
+            - Workloads that require sustained IOPS performance or more than 16,000 IOPS.
+            - I/O-intensive database workloads.
+    3. **HDD, Throughput Optimized – (st1)**
+        - Frequently accessed, throughput intensive workloads with large datasets and large I/O sizes, such as MapReduce, Kafka, log processing, data warehouse, and ETL workloads.
+        - Throughput measured in MiB/s and includes the ability to burst up to 250 MiB/s per TB, with a baseline throughput of 40 MB/s per TB and a maximum throughput of 500 MiB/s per volume.
+        - Cannot be a boot volume.
+        - EBS multi-attach not supported.
+    4. **HDD, Cold – (sc1)**
+        - Lowest cost storage – cannot be a boot volume.
+        - Less frequently accessed workloads with large, cold datasets.
+        - These volumes can burst up to 80 MiB/s per TiB, with a baseline throughput of 12 MiB/s.
+        - Cannot be a boot volume.
+        - EBS multi-attach not supported.
+
+**EBS optimized instances**
+- Dedicated capacity for Amazon EBS I/O.
+- EBS-optimized instances are designed for use with all EBS volume types.
+- Max bandwidth: 400 Mbps – 12000 Mbps.
+- IOPS: 3000 – 65000.
+- GP-SSD within 10% of baseline and burst performance 99.9% of the time.
+- PIOPS within 10% of baseline and burst performance 99.9% of the time.
+- Additional hourly fee.
+- Available for select instance types.
+- Some instance types have EBS-optimized enabled by default.
+
+
 
 
 ### Encryption
@@ -82,16 +130,16 @@
 - Create disaster recovery backup policies that back up data to isolated accounts.
 
 
-
 ## FSx (File Server)
 - Provides fully managed 
+- *Supports Distributed File System Replication DFSR*
 - **For windows**: provides a fully managed native Microsoft Windows file system so you can easily move your Windows-based applications that require file storage to AWS. It is built on Windows server
-    1. It is a managed Windows Server that runs Windows Server Message Block (SMB)-baed file services
+    1. It is a managed Windows Server that runs Windows Server Message Block (SMB)-based file services
     2. Designed for windows
     3. Integrates **Microsoft Active Directory** and can me mounted on your on-premise infrastructure
 - **FSx for Lustre** - fully managed file system that is optimized for compute-intensive workloads, such as high-performance computing, ML, media data processing workflows and electronic design automatino (EDA
     1. You can launch and run a Lustre file system that can process massive data sets at up to hundreds of gigabytes per second of throughput, millions of IOPS and sub-milisecond latencies
-    2. When linked to an S3 bucket, objects in **FSx** are presented as files 
+    2. **When linked to an S3 bucket, objects in **FSx** are presented as files **
 
 **When to use EFS, FSx for windows or FSx for Lustre**
 - EFS - when you need distributed, highly resilient storage for Linux instances and linux-based applications

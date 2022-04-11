@@ -131,6 +131,12 @@
 ## Global Accelerator
 - Creates accelerators to improve availability and performance of your applications for local and global users by directing traffic to optimal endpoinds over AWS global network.
 - By defaults gives you two statis IP addresses
+    - You can also define entry points be IPv4 addrresses from your own IP address ranges
+- Supports multiple AWS regions
+- Supports Network and Application Load Balancers, EC2 instances or Elastic IP addresses located in one or many regions
+- Provides a static IP addresses that act as a fixed entry point to application endpoints
+- has healthchecks integrates, which are usually copied from connected ELBs (For TCP only)
+- Protects from DDoS
 
 
 ## Shared Services VPCs

@@ -11,6 +11,9 @@
     - 10.0.0.3 - Reserved by AWS for future use
     - 10.0.0.255 - Network broadcast address. We do not support broadcast in a VPC, therefore we reserve this address
 - Can only have 1 *internet gateway* per VPC
+- You can associate an AWS Direct Connect with either of the following
+    - **A transit gateway** - when you have multiple VPCs in the same region
+    - **A virtual gateway**
 
 
 ## Gateway terminology
@@ -152,3 +155,10 @@
 is required on the customer side.
 - Two tunnels per connection must be configured for redundancy
     - Only uses private IP addresses, cannot access public or static address
+
+# Notes
+- You can manage single connection for multiple VPCs or VPNs that are in the same region by:
+    - A transit gateway that has VPC attachments
+    - A direct connect gateway
+    - An association between the Direct Connect gateway and the transit gateway
+    - A transit virtual interface that is attached to the Direct Connect gateway

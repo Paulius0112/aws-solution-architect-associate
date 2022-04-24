@@ -59,6 +59,8 @@ __Backups with RDS__
     - Done manually and are stored even afer you delete the original RDS instance, unlike automated backups.
 - If the database experiences high volume of change, by the time database is recreated, they can be out of sync
     - Therefore we need to use DMS to sync those databases
+- You can restore up to the last 5 minutes
+- The default security group is applied on backup, the custom will need to be attached manually
 
 __RDS Encryption__
 - **At rest Encryption** is done using KMS and supported on all database providers.
@@ -167,7 +169,7 @@ __DynamoDB__
 - AWS __DynamoDB__ is durable, ACID compliant, can go through multiple schema changes, and changes to the database does not result in any database downtime.
 - __DynamoDB Global Tables__ can be used to deploy a multi region, multi AZ, fully managed database solution.
 - We can create __secondary indexes__ for __DynamoDB__ tables. Always choose DynamoDB when possible.
-- DynamoDB streams can be used to monitor changes made to a database, and they can trigger lambda functions.
+- **DynamoDB streams** can be used to monitor changes made to a database, and they can trigger lambda functions.
 - We can turn on __autoscaling for DynamoDB__.
 - For __write heavy__ use cases in __DynamoDB__, use partition keys with large number of distinct values.
 - __DynamoDB Accelerator, DAX__ is an __in-memory cache for DynamoDB__ that reduces response time from milliseconds to microseconds.
@@ -176,7 +178,8 @@ __DynamoDB__
     - Store more frequently and less frequently accessed data in separate tables
     - If possible compress larger attribute values
     - Store objects larger than 400kb in S# and use pointers from S3 object ID in DynamoDB 
-
+- Can throttle requests that exceed the provisioned throughput for a table. It also returns 400 status code (bad request) and a ProvisionedThroughputExceededException
+    - When using the **provisioned capacity pricing** model DynamoDB does not automatically scale. DynamoDB can automatically scale when using the new **on-demand capacity mode**
 
 __DynamoDB Accelerator (DAX)__
 - Fully managed, highly available, in-memory cache

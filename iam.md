@@ -8,6 +8,10 @@ __AWS Directory Service__
     1. LDAP (Lightweight directory access protocl)
     2. DNS
 
+
+# IAM programmatic access
+- Can be granted using **Query API** or **Access key ID and secret key**
+
 __AWS Managed Microsoft AD__
 - Responsibilities
     1. AWS

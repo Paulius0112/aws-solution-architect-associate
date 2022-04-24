@@ -62,8 +62,17 @@
     - EBS root volume is encrypted and you do not have permission for decryption
     - AMI is missing required part
 
+- Can use **launch templates** to store launch parameters and can launch using AWS console, SDk..
+
 ## Security groups
-- All Inbound traffic is blocked by default
+
+- When you first create a security group, it has no inbound rules. Therefore, no inbound traffic is allowed until you add inbound rules to the security group.
+- When you first create a security group, it has an outbound rule that allows all outbound traffic from the resource. You can remove the rule and add outbound rules that allow specific outbound traffic only. If your security group has no outbound rules, no outbound traffic is allowed.
+- **Default VPC security group**:
+    - Allows inbound traffic from resources that are assigned to the same security group.
+    - Allows all outbound IPv4 traffic.
+- Custom Inbound traffic is blocked by default
+- Default security groups have inbound allow rules (allowing traffic from within the group)
 - All Outbound traffic is allowed
 - Changes to Security groups take immediately
 - You can have multiple EC2 on the same security group and vice versa
@@ -71,7 +80,9 @@
 - You cannot block specific IP using security groups, only Network Access Control List
 - You can only specify allow rules, not deny
 
+
 ## AMI
+
 Can be selected on
 - Region
 - OS
@@ -120,6 +131,7 @@ Can be selected on
 
 
 ## EC2 placement groups
+
 - When you launch a new EC2 instance, the EC2 service **attempts to place the instance in such a way that all of your instances are spread out across underlying hardware to minimize correlated failures.**
 - The name for placement group must be **unique** within your AWS account
 - You cant merge placement groups
@@ -144,6 +156,7 @@ Can be selected on
 
 
 ## Auto Scaling
+
 - Monitors your applications and automatically adjusts capacity to maintain steady, predictable performance at the lowest possible cost
 - Available services for **auto-scaling** include:
     1. **EC2**
@@ -153,8 +166,28 @@ Can be selected on
 - You create a collections of EC2 isntances (Auto Scaling groups) and AWS automatically provides **horizontal** scaling for your instances
 - It is a **region-specific** service
 - No cost for auto scaling, only for resources
+- You can deterine which subnet Auto Scaling will launch new instances into
 - **Launch configuration** is the template used to create new EC2 instances and include parameters such as instance family, type, AMI, key pair and security groups
+    - There is also **launch template** with allows versioning
     - You can't edit launch configuration, you need to create new one
+- **A launch configuration**:
+    - You can create a new launch configuration or you can use an existing running EC2 instance to create the launch configurtino
+    - If you want to change your launch configurations you have to create a new one, make the required changes, and use that with your auto scaling groups
+- You can use a *launch configuration* with multiple auto scaling groups
+- An **Auto Scaling Group** is a logical grouping of EC2 instances managed by an Auo Scaling Policy
+    - An ASG can be edited once defined
+    - Can attach one or more ELB to an existing ASG (ELBs must be in the same region)
+    - Once you do this any EC2 instace existing or added by the ASG will be automatically registered with the ASG defined ELB
+- *Autoscaling group* is a logical grouping of EC2 instances managed by an Auto Scaling Policy
+    - An ASG can be edited once defined
+    - You can attach one or more Target Groups to your ASG to include instances behind an ALB
+    - Once you do this any EC2 instance existing or added by the ASG will be automatically registered with the ASG defined ELBs
+    - If adding an instance to an ASG would result in exceeding the maximum capacity of the ASG the request will fail
+    - You can add running instance to an ASG if the following conditions are met:
+        - The instance is in a running state
+        - The AMI used to launch the instance still exists
+        - The instance is not part of another ASG
+        - The instance is in the same AZs foir the ASG
 - **Types**
 | Scaling        | Description                                                      | When to use                                                               |
 |----------------|------------------------------------------------------------------|---------------------------------------------------------------------------|
@@ -180,8 +213,51 @@ __ASG Behavior and Configuration__
 - Termination policies control the instances which are terminated first when a scale-in event occurs
     - The default termination policy ensures thats EC2 instances span AZ evenly for high availability
     - You can enable **Instance Protection** which prevents Auto Scaling from scaling in and terminating the EC2 instances
+- If Auto Scaling fails to launch instances in a specific AZ it will try othe AZs until successful
+- The default health check grace period is 300 seconds
+- An imbalance may occur due to:
+    - Manually removing AZs/subnets from the configuration
+    - Manually terminating EC2 instances
+    - EC2 capacity issues
+    - Spot price is reached
+- All Elastic IPs and EBS volumes are detached from terminated EC2 instances and will need to be manually reattached
+- Once an EC2 instance enters the temrinating state it cannot be put back into service again
+    - However, there is a short period of time in which an AWS CLI command can be run to change an instance to healthy
+- Termination of unhealthy instances happens first, then Auto Scaling attempts to launch new instances to replace terminated instnaces. This is different to AZ rebalancing
+- When detaching an EC2 instance you can optionally decrement the ASG's desired capacity (to prevent from launching another instance)
+- An instance can only be attached to one Auto Scaling group at a time
+- You can suspend and then resume one or more of the scaling processes for your ASG at any time
+    - This can be useful when if you want to investigate an issue with an application and make changes without invoking the scaling processes
+- You can manually move an instance from an ASG and put it in the standby state
+    - Instances in the standby state are still managed by Auto Scaling, are charged as normal, and do not count towards available EC2 instance for workload/application use.
+    - Standby state can be used for performing updates/changes/troubleshooting etc. without health checks being performed or replacement instances being launched.
+- Deleting Auto Scaling group will terminate all EC2 instances
+- You can mix Spot instances with on-demand (**when using launch template**)
+- **Merging ASG**
+    - Can merge multiople single AZ auto scaling groups into a single multi-AZ ASG
+    - Merging can only be performed by using the CLI
+    - The process is to rezone one of the groups to cover/span the other AZs for the other ASGs and then delete the other ASGs
+    - This can be performed on ASGs with or without ELBs attached to them
+- **Cooldown Period:**
+    - The cooldown period is a setting you can configure for your Auto Scaling group that helps to ensure that it doesn’t launch or terminate additional instances before the previous scaling activity takes effect.
+    - A default cooldown period of 300 seconds is applied when you create your Auto Scaling group.
+    - You can configure the cooldown period when you create the Auto Scaling group.
+    - You can override the default cooldown via scaling-specific cooldown.
+- The warm-up period is the period in which a newly launched EC2 instance in an ASG that uses step scaling is not considered toward the ASG metrics.
+- *Information about ASG health checks*
+    - By default uses EC2 status checks
+    - Can also use ELB health checks and custom health check
+    - ELB health checks are in addition to the EC2 status checks
+    - If any health check returns an unhealthy status the instance will be terminated
+    - With ELB an instance is marked as unhealthy if ELB reports it as OutOfService
+    - A healthy instance enters the InService state
+    - If an instance is marked as unhealthy it will be scheduled for replacement
+    - If connection draining is enabled, Auto Scaling waits for in-flight requests to complete or timeout before terminating instances
+    - The health check grace period allows a period of time for a new instance to warm up before performing a health check (300 seconds by default)
+
 
 ## SPOT instances and fleets
+
 - Use unused EC2 capacity in the AWS cloud. Are available at up to 90% discount comparaed to On-Demand. Can use for stateless, fault-tolerant or flexiable applications, such as big data, containeriz workloads, CI/CD, web servers, HPC and other test workloads. They are not good for persistent workloads, critical jobs and databases
 - To use the Spot Instances, you must first decide on your maximum Spot price. The instance will be provisioned so long as the Spot price is below your maximum Spot price. Hourly spot price varies depending on capacity and region
 - If spot price goes above your maximum, you have two minutes to choose wheter to stop or terminate your instance
@@ -203,6 +279,7 @@ __Spot fleets__
     3. Spot fleets will stop launching instances once you reach your price threshold or capacity desire
 
 ## EC2 Hipernate
+
 - When you hibernate an EC2 instance, the OS is told to perform hibernation. It saves the contents from the instance memory RAM to your EBS root volume.
 - OS does not need to reboot, since the RAM contents are reloaded, rovides much faster boot up
 - It requires to have root volume encryption
@@ -210,6 +287,7 @@ __Spot fleets__
 - Can't be hibernated for more than 60 days
 
 ## Cloudtrail
+
 - increases visibility into your user and resource activity by recording AWS Management COnsole actions and API calls
 - Can create a **trail** to enable continuous delivery of CloudTrail events to an Amazon S3 bucket
 - Trails enable you to store records indefinitely
@@ -217,31 +295,34 @@ __Spot fleets__
 - You can determine the request made, source IP address, owner of request, date and additional details
 
 ## Cloudwatch
+
 - Can monitor most of AWS as well as your applications that run on AWS
 - CloudWatch with EC2 will monitor events every 5 minutes by default
     - You can have 1 miunte intervals by turning on detailed monitoring (chargeable)
 
 ## IAM Roles
+
 - Roles are more secure than storing your access and secret keys on individual EC2 instances.
 - Roles are easier to manage
 - Roles can be assigned to EC2 instances after it is created using both console and command line
 - Roles are universal - can be used in any region
 
 ## High Availability approaches
+
 - Up to date AMIs are critical for rapid fail-over
 - AMIs can be copied to other regions for safety or DR
 - Horizontally scalable architectures are preferred because risk can be spread across multiple smaller machines versus one large machine
 - Auto scaling and ELB work together to provide automated recovery by maintaining minimum instances
 - Route53 health checks
 
-
 ## AWS Server Migration Service
+
 - Is an agnet-less service which makes it easier and faster for you to migrate thousands of on-premises workloads to AWS
 - Allows to automate, schedule and track incremental replications of live server volumes, making it easier for you to coordinate large-scale server migrations
 - Replicates VMs to AWS, syncing volumes and creating periodic AMIs
 
-
 ## High performance computing (HPC)
+
 - Create a large number of resources in almost no time. You only pay for the resources you use - and, once finished, you can destroy them
 - Can be achieved by these services
 1. Data transfer (get data into AWS)

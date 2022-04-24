@@ -11,7 +11,7 @@
     2. **Max I/O** - performance mode is optimized for applications where tens, hundreds, or thousands of EC@ instances are accessing the file system
 - You pay only for what you use
 - Can **support thousands of concurrent NFS connections** and can scale up to the petabytes
-- Data is stored across** multiple AZ's** within a region
+- Data is stored across **multiple AZ's** within a region
 - Read After Write consistency
 - EC2 running windows cannot connect to EFS, only linux and unix based. If it is windows server, it should use FSx Windows
 - EFS supports cross availability zone mounting, but it is not recommended. The recommended approach is __creating a mount point in each availability zone__.
@@ -25,6 +25,9 @@
 - __Throughput mode__
     1. Bursting is ideal for arbitrary large amount of data, because it scales properly.
     2. But for cases with high throughput to storage ratio, such as common in web applications, provisioned mode is better.
+- You can control who administer your file system using IAM
+- You can control access to files and directories with POSIX-compliant user and group-level permissions. Allows you to restrict access from hosts by user and group
+- EFS security group act as a firewall, and the rules you add define the traffic flow
 
 
 ## EBS
@@ -37,6 +40,7 @@
 - Volume sizes and types can be upgraded without downtime (except for magnetic standard)
 - **Elastic Volumes** allow you to increase volume size, adjust performance, or change the volume type while the volume is in use
 - To migrate volumes between AZ’s create a snapshot then create a volume in another AZ from the snapshot (possible to change size and type).
+- All **volumes** support encryption, but not all **instance types**
 - **Throughput optimized EBS** volumes cannot be a boot volume
 - You can attach additional EBS volumes to a running instance
     - You cannot decrease an EBS volume size
